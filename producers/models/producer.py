@@ -9,11 +9,11 @@ from confluent_kafka.avro import AvroProducer
 
 logger = logging.getLogger(__name__)
 
-SCHEMA_REGISTRY_URL = "http://localhost:8081",
-BOOTSTRAP_SERVERS = "PLAINTEXT://localhost:9092"
-BROKER_URL = "PLAINTEXT://localhost:9092"
-REST_PROXY_URL = "http://localhost:8082"
-KAFKA_CONNECT_URL = "http://localhost:8083/connectors"
+SCHEMA_REGISTRY_URL: str = "http://localhost:8081"
+BOOTSTRAP_SERVERS: str = "PLAINTEXT://localhost:9092"
+BROKER_URL: str = "PLAINTEXT://localhost:9092"
+REST_PROXY_URL: str = "http://localhost:8082"
+KAFKA_CONNECT_URL: str = "http://localhost:8083/connectors"
 
 
 

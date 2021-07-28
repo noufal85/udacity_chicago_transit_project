@@ -81,7 +81,7 @@ class Producer:
         cluster_metadata = self.client.list_topics(timeout=5.0)
         topics = cluster_metadata.topics
         if self.topic_name not in topics:
-            topic_details = self.client.create_topics([NewTopic(self.topic_name, num_partitions=self.num_partitions, num_replicas=self.num_replicas)])
+            topic_details = self.client.create_topics([NewTopic(self.topic_name, num_partitions=self.num_partitions, replication_factor=self.num_replicas)])
         else:
             logger.debug(f"Topic already exists: {self.topic_name}")
             return

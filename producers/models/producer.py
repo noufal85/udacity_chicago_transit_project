@@ -9,6 +9,13 @@ from confluent_kafka.avro import AvroProducer
 
 logger = logging.getLogger(__name__)
 
+SCHEMA_REGISTRY_URL = "http://localhost:8081",
+BOOTSTRAP_SERVERS = "PLAINTEXT://localhost:9092"
+BROKER_URL = "PLAINTEXT://localhost:9092"
+REST_PROXY_URL = "http://localhost:8082"
+KAFKA_CONNECT_URL = "http://localhost:8083/connectors"
+
+
 
 class Producer:
     """Defines and provides common functionality amongst Producers"""
@@ -38,9 +45,8 @@ class Producer:
         #
         #
         self.broker_properties = {
-            # TODO
-            # TODO
-            # TODO
+            "schema.registry.url": SCHEMA_REGISTRY_URL ,
+            "bootstrap.servers": BOOTSTRAP_SERVERS
         }
 
         # If the topic does not already exist, try to create it
@@ -49,8 +55,19 @@ class Producer:
             Producer.existing_topics.add(self.topic_name)
 
         # TODO: Configure the AvroProducer
-        # self.producer = AvroProducer(
-        # )
+        self.producer = AvroProducer(
+            {
+            "bootstrap.servers" :BOOTSTRAP_SERVERS,    
+            "schema.registry.url": SCHEMA_REGISTRY_URL
+            },
+            default_key_schema=key_schema,
+            default_value_schema=value_schema,
+         )
+        
+    @property
+    def client(self):
+        self.client = AdminClient({"bootstrap.servers": BROKER_URL})
+        return self.client        
 
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
@@ -60,8 +77,15 @@ class Producer:
         # the Kafka Broker.
         #
         #
-        logger.info("topic creation kafka integration incomplete - skipping")
-
+        cluster_metadata = self.client.list_topics(timeout=5.0)
+        topics = cluster_metadata.topics
+        if self.topic_name not in topics:
+            topic_details = self.client.create_topics([NewTopic(self.topic_name, num_partitions=self.num_partitions, num_replicas=self.num_replicas)])
+        else:
+            logger.debug(f"Topic already exists: {self.topic_name}")
+            return
+        
+        
     def time_millis(self):
         return int(round(time.time() * 1000))
 
@@ -72,6 +96,7 @@ class Producer:
         # TODO: Write cleanup code for the Producer here
         #
         #
+        self.producer.flush()
         logger.info("producer close incomplete - skipping")
 
     def time_millis(self):

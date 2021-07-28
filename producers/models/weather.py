@@ -28,6 +28,7 @@ class Weather(Producer):
 
     winter_months = set((0, 1, 2, 3, 10, 11))
     summer_months = set((6, 7, 8))
+    topic_name = "cta.weather"
 
     def __init__(self, month):
         #
@@ -37,9 +38,12 @@ class Weather(Producer):
         #
         #
         super().__init__(
-            "weather", # TODO: Come up with a better topic name
+            #"weather", # TODO: Come up with a better topic name
+            topic_name= Weather.topic_name ,
             key_schema=Weather.key_schema,
             value_schema=Weather.value_schema,
+            num_partitions=2,
+            num_replicas=1,
         )
 
         self.status = Weather.status.sunny
@@ -104,6 +108,30 @@ class Weather(Producer):
         #    ),
         #)
         #resp.raise_for_status()
+
+        resp = requests.post(
+            f"{Weather.rest_proxy_url}/topics/{self.topic_name}",
+            headers={"Content-Type": "application/vnd.kafka.avro.v2+json"},
+            data=json.dumps(
+                {
+                    "key_schema": json.dumps(Weather.key_schema.to_json()),
+                    "value_schema": json.dumps(Weather.value_schema.to_json()),
+                    "records": [
+                        {
+                            "key": {"timestamp": self.time_millis()},
+                            "value": {
+                                "temperature": self.temp,
+                                "status": self.status.name,
+                            },
+                        }
+                    ],
+                }
+            ),
+        )
+        try:
+            resp.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            logger.error(f"REST Proxy failed to deliver: {err}")
 
         logger.debug(
             "sent weather data to kafka, temp: %s, status: %s",

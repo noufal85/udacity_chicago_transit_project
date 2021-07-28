@@ -2,7 +2,7 @@
 import logging
 
 import faust
-
+import config
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +52,43 @@ app = faust.App("stations-stream", broker="kafka://localhost:9092", store="memor
 # then you would set the `line` of the `TransformedStation` record to the string `"red"`
 #
 #
+topic = app.topic(config.CtaTopics.STATIONS, value_type=Station)
+out_topic = app.topic(
+    config.CtaTopics.STATIONS_LINE,
+    key_type=int,
+    value_type=TransformedStation,
+    partitions=1,
+)
+
+table = app.Table(
+    name=config.CtaTopics.STATIONS_LINE,
+    default=TransformedStation,
+    partitions=1,
+    changelog_topic=out_topic,
+)
+
+
+@app.agent(topic)
+async def transform_station(stations):
+    async for station in stations:
+        if station.red:
+            line = "red"
+        elif station.green:
+            line = "green"
+        elif station.blue:
+            line = "blue"
+        else:
+            line = None
+
+        transformed_station = TransformedStation(
+            station_id=station.station_id,
+            station_name=station.station_name,
+            order=station.order,
+            line=line,
+        )
+
+        table[station.station_id] = transformed_station
+
 
 
 if __name__ == "__main__":

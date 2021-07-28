@@ -37,6 +37,7 @@ class Producer:
         self.value_schema = value_schema
         self.num_partitions = num_partitions
         self.num_replicas = num_replicas
+        self._client = None
 
         #
         #
@@ -66,8 +67,8 @@ class Producer:
         
     @property
     def client(self):
-        self.client = AdminClient({"bootstrap.servers": BROKER_URL})
-        return self.client        
+        self._client = AdminClient({"bootstrap.servers": BROKER_URL})
+        return self._client        
 
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""

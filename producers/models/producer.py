@@ -14,7 +14,7 @@ BOOTSTRAP_SERVERS: str = "PLAINTEXT://localhost:9092"
 BROKER_URL: str = "PLAINTEXT://localhost:9092"
 REST_PROXY_URL: str = "http://localhost:8082"
 KAFKA_CONNECT_URL: str = "http://localhost:8083/connectors"
-
+KAFKA_BROKER: str = "PLAINTEXT://localhost:9092"
 
 
 class Producer:
@@ -38,6 +38,11 @@ class Producer:
         self.num_partitions = num_partitions
         self.num_replicas = num_replicas
         self._client = None
+        self.broker_properties = {
+            "bootstrap.servers": KAFKA_BROKER,
+            "schema.registry.url": SCHEMA_REGISTRY_URL,
+            "on_delivery": delivery_report,
+        }
 
         #
         #
@@ -103,3 +108,10 @@ class Producer:
     def time_millis(self):
         """Use this function to get the key for Kafka Events"""
         return int(round(time.time() * 1000))
+
+def delivery_report(err, msg):
+    """Callback on message delivery result"""
+    if err is not None:
+        logger.error(f"Message delivery failed: {err}")
+    else:
+        logger.debug(f"Message delivered to {msg.topic()}[{msg.partition()}]")

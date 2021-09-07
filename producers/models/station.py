@@ -57,6 +57,7 @@ class Station(Producer):
         self.a_train = None
         self.b_train = None
         self.turnstile = Turnstile(self)
+        logger.debug(f"Initialized Station | {self.station_id} | {self.name} | {self.color}")
 
 
     def run(self, train, direction, prev_station_id, prev_direction):

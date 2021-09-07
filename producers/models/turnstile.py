@@ -61,6 +61,7 @@ class Turnstile(Producer):
         #
         for _ in range(num_entries):
             self.producer.poll(0)
+            logger.debug(f'topic anme : {self.topic_name}')
             self.producer.produce(
                 topic=self.topic_name,
                 key={"timestamp": self.time_millis()},

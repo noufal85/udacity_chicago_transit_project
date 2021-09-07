@@ -58,7 +58,7 @@ class ClickEvent:
         #
         out = BytesIO()
         writer(out, ClickEvent.schema, [asdict(self)])
-        return out.getvalue()
+        return out.getvalue() 
 
 
 async def produce(topic_name):

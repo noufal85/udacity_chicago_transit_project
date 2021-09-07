@@ -1,12 +1,13 @@
 """Defines functionality relating to train lines"""
 import collections
 from enum import IntEnum
-import logging
+#import logging
 
 from models import Station, Train
 
 
-logger = logging.getLogger(__name__)
+#logger = logging.getLogger(__name__)
+from loguru import logger 
 
 
 class Line:
@@ -22,6 +23,7 @@ class Line:
         # We must always discount the terminal station at the end of each direction
         self.num_stations = len(self.stations) - 1
         self.trains = self._build_trains()
+        logger.info(f"{self.color.name} Line: {self.num_stations} stations")
 
     def _build_line_data(self, station_df):
         """Constructs all stations on the line"""
@@ -40,9 +42,11 @@ class Line:
                 self.color,
                 prev_station,
             )
+            #logger.info(f"new station is - {new_station}")
             prev_station.dir_b = new_station
             prev_station = new_station
             line.append(new_station)
+
         return line
 
     def _build_trains(self):
@@ -62,7 +66,7 @@ class Line:
             else:
                 self.stations[curr_loc].arrive_a(train, None, None)
             curr_loc, b_dir = self._get_next_idx(curr_loc, b_dir)
-
+        logger.debug(trains)
         return trains
 
     def run(self, timestamp, time_step):
@@ -121,7 +125,7 @@ class Line:
         if b_direction is True:
             self.stations[curr_index].b_train = None
         else:
-            self.stations[curr_index].a_train = None
+            self.stations[curr_index].a_train =  None
 
         # Advance last train to the next station
         prev_station = self.stations[curr_index].station_id
